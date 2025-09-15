@@ -6,6 +6,11 @@ variables:
   dotnetSdkVersion: '8.x'
 
 steps:
+- script: |
+    sudo apt-get update
+    sudo apt-get install -y mono-complete
+  displayName: 'Install Mono'
+
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(dotnetSdkVersion)'
   inputs:
