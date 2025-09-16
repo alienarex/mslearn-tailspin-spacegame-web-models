@@ -4,6 +4,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   dotnetSdkVersion: '8.x'
+  packageMinVersion: '1'
 
 steps:
 - script: |
@@ -37,7 +38,7 @@ steps:
     arguments: '--no-build --configuration $(buildConfiguration)'
     versioningScheme: byPrereleaseNumber
     majorVersion: '1'
-    minorVersion: '0'
+    minorVersion: '$(packageMinVersion)'
     patchVersion: '0'
  
 - task: NuGetCommand@2
