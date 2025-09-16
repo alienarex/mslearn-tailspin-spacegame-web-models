@@ -7,22 +7,24 @@ variables:
   packageMinVersion: '1'
 
 steps:
-- script: |
-    sudo apt-get update
-    sudo apt-get install -y mono-complete
-  displayName: 'Install Mono'
-
+# Use .NET SDK
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(dotnetSdkVersion)'
   inputs:
     version: '$(dotnetSdkVersion)'
 
+# Authenticate to NuGet feed
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate with NuGet'
+
+# Restore
 - task: DotNetCoreCLI@2
   displayName: 'Restore project dependencies'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
 
+# Build
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - $(buildConfiguration)'
   inputs:
@@ -30,6 +32,7 @@ steps:
     arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.csproj'
 
+# pack the project
 - task: DotNetCoreCLI@2
   displayName: 'Pack the project - $(buildConfiguration)'
   inputs:
@@ -40,11 +43,14 @@ steps:
     majorVersion: '1'
     minorVersion: '$(packageMinVersion)'
     patchVersion: '0'
- 
-- task: NuGetCommand@2
-  displayName: 'Publish NuGet package'
+
+# Push package (replaces NuGetCommand@2)
+- task: DotNetCoreCLI@2
+  displayName: 'Push NuGet package'
   inputs:
-    command: push
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    nuGetFeedType: 'internal'
     publishVstsFeed: '$(System.TeamProject)/Tailspin.SpaceGame.Web.Models'
-    allowPackageConflicts: true
+    arguments: '--skip-duplicate'
   condition: succeeded()
